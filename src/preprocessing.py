@@ -1,11 +1,13 @@
 import numpy as np
 import pandas as pd
+import os
+
 
 class Preprocessing():
 
     def __init__(self, df) -> None:
         self.df = df
-        self.target_column = 'label'
+        self.target_column = "label"
 
     def run(self) -> None:
         """
@@ -66,6 +68,7 @@ class Preprocessing():
         """
         To save cleaned dataframe as a new csv file
         """
+        
 
         # Save the updated df
-        self.df.to_csv('../datasets/clean_ds.csv', index=False)
+        self.df.to_csv("datasets/clean_ds.csv", index=False)
