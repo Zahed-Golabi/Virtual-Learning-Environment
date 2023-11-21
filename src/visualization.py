@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
+import time
+
 
 
 class Visualization():
@@ -30,8 +32,12 @@ class Visualization():
         """
 
         # Visualize the distribution of a feature
-        sns.histplot(self.df[feature_name], kde=False)
+        sns.histplot(data=self.df, x=feature_name, hue="label", kde=True)
+        plt.title("Histogram of " + feature_name)
+        plt.tight_layout()
         plt.savefig('charts/eda/feature_distribution/{}.png'.format(feature_name))
+        plt.show()
+        
 
     def feature_correlation_scatterplot(self, feature_name_x, feature_name_y):
         """
@@ -60,4 +66,4 @@ def display(message="Display Message:", df=None):
 
     print(message)
     print(df)
-    print("----------------------------------------")
+    print("-------------------------------------------------------------------")
