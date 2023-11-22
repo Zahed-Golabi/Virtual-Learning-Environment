@@ -31,8 +31,29 @@ class Preprocessing():
     def feature_engineering(self):
         
         """
-        add two features to the dataframe in order to model effectively
+        add twenty-two features to the dataframe in order to model effectively
         """
+        step = 20 # number of activities
+        total_columns = len(self.df.columns) - 1
+        # insert a column, sum of clicks of specific activity
+        insert = lambda i: self.df.iloc[:, i:total_columns:step].sum(axis=1)
+        new_columns = {"total_dataplus_clicks":insert(9), "total_dualpane_clicks":insert(10),
+              "total_external_quiz_clicks":insert(11), "total_folder_clicks":insert(12),
+              "total_forum_clicks":insert(13), "total_glossary_clicks":insert(14),
+              "total_homepage_clicks":insert(15), "total_hrml_clicks":insert(16),
+              "total_collaborate_clicks":insert(17), "total_content_clicks":insert(18),
+              "total_elluminate_clicks":insert(19), "total_wiki_clicks":insert(20),
+              "total_page_clicks":insert(21), "total_questionnaire_clicks":insert(22),
+              "total_quiz_clicks":insert(23), "total_repeated_clicks":insert(24),
+              "total_resource_clicks":insert(25), "total_shared_clicks":insert(26),
+              "total_subpage_clicks":insert(27), "total_url_clicks":insert(28)}
+              
+        for col,values in new_columns.items():
+    
+            self.df.insert(loc=len(self.df.columns)-1,
+            column=col,
+            value=values)
+        
     
         # sum up the total activities each student participate
         def total_activity(row):
@@ -46,13 +67,13 @@ class Preprocessing():
             return total
         
         
-        total_activities = self.df.iloc[:,9:-1].apply(total_activity, axis=1)
+        total_activities = self.df.iloc[:,9:-21].apply(total_activity, axis=1)
         self.df.insert(loc = len(self.df.columns)-1,
                        column = "total_activities",
                        value = total_activities)
         
         # sum up the total clicks for each student
-        total_clicks = self.df.iloc[:,9:-2].sum(axis=1)
+        total_clicks = self.df.iloc[:,9:-22].sum(axis=1)
         self.df.insert(loc = len(self.df.columns)-1,
                       column = "total_clicks",
                       value = total_clicks)
@@ -61,7 +82,7 @@ class Preprocessing():
     def drop_features(self):
         """
         """
-        self.df.drop(self.df.columns[9:-3], axis=1, inplace=True)
+        self.df.drop(self.df.columns[9:-23], axis=1, inplace=True)
         
 
     def save_new_dataset(self):
