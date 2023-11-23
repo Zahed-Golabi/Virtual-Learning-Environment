@@ -16,6 +16,15 @@ class Visualization():
 
         # Check the shape of the dataset
         display("Data Shape:", self.df.shape)
+        
+        # Check the columns of the dataset
+        display("columns:", self.df.columns)
+        
+        # Check the information of the dataset
+        display("info:", self.df.info())
+        
+        # Check the distribution of the target feature
+        display("targe:", self.df["label"].value_counts())
 
         # Check the data types of the columns
         display("Data Types", self.df.dtypes)
