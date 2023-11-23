@@ -21,8 +21,8 @@ if __name__ == "__main__":
     df = pd.read_csv('./datasets/clean_ds.csv')
     visualization = Visualization(df)
     visualization.stats()
-    categorical_features = ["code_module", "code_presentation", "gender", "region", "highest_education", "imd_band", "age_band", "disability"]
-    for feature in categorical_features:
-        visualization.feature_distribution(feature)
+    #categorical_features = ["code_module", "code_presentation", "gender", "region", "highest_education", "imd_band", "age_band", "disability"]
+    #for feature in categorical_features:
+    #    visualization.feature_distribution(feature)
 
 
