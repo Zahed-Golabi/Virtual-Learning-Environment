@@ -14,8 +14,13 @@ class Preprocessing():
         Start cleaning the data
         """
         
+        # Replace incorrect values
+        self.replace_values("imd_band")
         
-        # Create two features
+        # Fill missing values
+        self.fill_values("imd_band")
+        
+        # Create twenty-two features
         self.feature_engineering()
         
         # Drop useless features
@@ -28,6 +33,21 @@ class Preprocessing():
         # self.visualization.stats()
         
         
+        
+    def replace_values(self, column):
+        """
+        The imd_band has some fault values
+        """
+        self.df[column].replace("20-Oct","10-20%", inplace=True)
+        
+    
+    def fill_values(self, column):
+        """
+        Filling missing values of columns with 'mode' of values
+        """
+        self.df[column] = self.df.apply(lambda row: self.df[self.df['region']==row['region']]['imd_band'].mode()[0] if pd.isna(row['imd_band']) else row['imd_band'], axis=1)
+        
+    
     def feature_engineering(self):
         
         """
