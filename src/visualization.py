@@ -9,6 +9,11 @@ class Visualization():
 
     def __init__(self, df) -> None:
         self.df = df
+        self.target_column = "label"
+        self.convert = {"code_module":"Modules", "code_presentation":"Semesters",
+                        "gender":"Gender", "region":"Region", "highest_education":"Degree",
+                        "imd_band":"Imd_band", "age_band":"Age_band", "disability":"Disability", "label":"Result"}
+        
     
     def stats(self):
         """
@@ -33,34 +38,31 @@ class Visualization():
         # Check summary statistics of the numerical columns
         display("Overall Statistics", self.df.describe())
 
-    def distribution_plot(self, feature, mode="bar"):
+
+    def feature_distribution_plot(self, feature_name_x, mode="bar"):
         """
         plot distribution for each feature
         """
         
-        convert = {"code_module":"Modules", "code_presentation":"Semesters",
-                  "gender":"Gender", "region":"Region", "highest_education":"Degree",
-                  "imd_band":"Imd_band", "age_band":"Age_band", "disability":"Disability"}
-        
-        data = self.df.groupby(feature).agg({"id_student":"count"})
-        data = data.reset_index().rename(columns={feature:convert[feature], "id_student":"Count"})
+        data = self.df.groupby(feature_name_x).agg({"id_student":"count"})
+        data = data.reset_index().rename(columns={"id_student":"Count"})
         data["Percentage"] = data.apply(lambda row: round(100 *(row["Count"]/data["Count"].sum()),2), axis=1)
     
         if mode=="bar":
-            fig = px.bar(data, x=convert[feature], y="Count", text="Percentage", color=convert[feature],
+            fig = px.bar(data, x=feature_name_x, y="Count", text="Percentage", color=feature_name_x,
                         hover_data=["Count"], template="seaborn")
             fig.update_layout(margin=dict(l=20, r=50, t=50, b=50),
-                         title="Distribution of: " + feature,
-                         xaxis_title=convert[feature],
+                         title="Distribution of: " + feature_name_x,
+                         xaxis_title=self.convert[feature_name_x],
                          yaxis_title="Count",
-                         legend_title=convert[feature],
+                         legend_title=self.convert[feature_name_x],
                          width=600,
                          height=400,
                          uniformtext_minsize=10,
                          uniformtext_mode="hide")
     
         elif mode=="pie":
-            fig = px.pie(data, values="Percentage", names=convert[feature], title="Distribution of: " + feature)
+            fig = px.pie(data, values="Percentage", names=feature_name_x, title="Distribution of: " + feature_name_x)
             fig.update_traces(textposition='inside', textinfo='percent+label')
             
         else:
@@ -69,10 +71,33 @@ class Visualization():
         
     
         # save the figure
-        fig.write_image(f"charts/eda/feature_distribution/{feature}_{mode}.jpeg")
+        fig.write_image(f"charts/eda/feature_distribution/{feature_name_x}_{mode}.jpeg")
         
     
+    def feature_correlation_barplot(self, feature_name_x):
+        """
+        Plot distribution for feature and target
+        """
+        
+        data = self.df.groupby([feature_name_x,self.target_column]).agg({"id_student":"count"})
+        data = data.reset_index().rename(columns={"id_student":"Count"})
+        data["Percentage"] = data.apply(lambda row: round(100 *(row["Count"]/data[data[feature_name_x]==row[feature_name_x]]["Count"].sum()),2), axis=1)
     
+
+        fig = px.bar(data, x=feature_name_x, y="Percentage", text="Percentage", color=self.target_column,
+                        hover_data=["Percentage"], barmode="stack", template="seaborn")
+        fig.update_layout(margin=dict(l=20, r=50, t=50, b=20),
+                         title=self.convert[feature_name_x] + " Correlation with Result",
+                         xaxis_title=self.convert[feature_name_x],
+                         yaxis_title="Percentage",
+                         legend_title=self.convert["label"],
+                         width=800,
+                         height=500,
+                         uniformtext_minsize=10,
+                         uniformtext_mode="hide")
+    
+        # save the figure
+        fig.write_image(f"charts/eda/correlation_distribution/{feature_name_x}.jpeg")
     
     
     def feature_correlation_scatterplot(self, feature_name_x, feature_name_y):
