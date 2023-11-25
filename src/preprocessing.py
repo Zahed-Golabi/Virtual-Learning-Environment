@@ -14,8 +14,9 @@ class Preprocessing():
         Start cleaning the data
         """
         
-        # Replace incorrect values
-        self.replace_values("imd_band")
+        # Replace values
+        self.replace_values("imd_band", "20-Oct", "10-20%")
+        self.replace_values("code_presentation", ["2013B","2013J","2014B","2014J"], ["2013-Feb","2013-Oct","2014-Feb","2014-Oct"])
         
         # Fill missing values
         self.fill_values("imd_band")
@@ -34,11 +35,11 @@ class Preprocessing():
         
         
         
-    def replace_values(self, column):
+    def replace_values(self, column, old, new):
         """
-        The imd_band has some fault values
+        To replace some values with new ones
         """
-        self.df[column].replace("20-Oct","10-20%", inplace=True)
+        self.df[column].replace(old, new, inplace=True)
         
     
     def fill_values(self, column):
