@@ -90,14 +90,14 @@ class Visualization():
                          title=self.convert[feature_name_x] + " Correlation with Result",
                          xaxis_title=self.convert[feature_name_x],
                          yaxis_title="Percentage",
-                         legend_title=self.convert["label"],
+                         legend_title=self.convert[self.target_column],
                          width=800,
                          height=500,
                          uniformtext_minsize=10,
                          uniformtext_mode="hide")
     
         # save the figure
-        fig.write_image(f"charts/eda/correlation_distribution/{feature_name_x}.jpeg")
+        fig.write_image(f"charts/eda/correlation_distribution_bar/{feature_name_x}.jpeg")
     
     
     def feature_correlation_scatterplot(self, feature_name_x, feature_name_y):
@@ -106,18 +106,16 @@ class Visualization():
         """
 
         # Visualize the correlation of two numerical features
-        sns.scatterplot(x=feature_name_x, y=feature_name_y, data=self.df)
-        plt.savefig('charts/eda/correlation_distribution/{}_{}.png'.format(feature_name_x, feature_name_y))
-
-    def feature_correlation_boxplot(self, feature_name_categorical, feature_name_numerical):
-        """
-        To plot correlation between a categorical and a numberical feature
-        """
-
-        # Visualize the correlation between a categorical and a numerical feature
-        sns.boxplot(x=feature_name_categorical, y=feature_name_numerical, data=self.df, hue="label")
-        plt.savefig('charts/eda/correlation_distribution/{}_{}.png'.format(feature_name_categorical, feature_name_numerical))
-
+        fig = px.scatter(self.df, x=feature_name_x, y=feature_name_y, color=self.target_column, size=feature_name_x, hover_data=[self.target_column])
+        fig.update_layout(margin=dict(l=20, r=50, t=50, b=50),
+                         title=feature_name_x.capitalize() + " vs " + feature_name_y.capitalize() ,
+                         xaxis_title=feature_name_x.capitalize(),
+                         yaxis_title=feature_name_y.capitalize(),
+                         legend_title=self.convert[self.target_column])
+        
+        # save the figure
+        fig.write_image(f'charts/eda/correlation_distribution_scatter/{feature_name_x} vs {feature_name_y}.jpeg')
+        
 
         
 def display(message="Display Message:", df=None):
