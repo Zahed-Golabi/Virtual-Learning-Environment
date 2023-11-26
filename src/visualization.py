@@ -39,7 +39,7 @@ class Visualization():
         display("Overall Statistics", self.df.describe())
 
 
-    def feature_distribution_plot(self, feature_name_x, mode="bar"):
+    def feature_distribution_plot(self, feature_name_x, kind="bar"):
         """
         plot distribution for each feature
         """
@@ -48,7 +48,7 @@ class Visualization():
         data = data.reset_index().rename(columns={"id_student":"Count"})
         data["Percentage"] = data.apply(lambda row: round(100 *(row["Count"]/data["Count"].sum()),2), axis=1)
     
-        if mode=="bar":
+        if kind=="bar":
             fig = px.bar(data, x=feature_name_x, y="Count", text="Percentage", color=feature_name_x,
                         hover_data=["Count"], template="seaborn")
             fig.update_layout(margin=dict(l=20, r=50, t=50, b=50),
@@ -61,17 +61,17 @@ class Visualization():
                          uniformtext_minsize=10,
                          uniformtext_mode="hide")
     
-        elif mode=="pie":
+        elif kind=="pie":
             fig = px.pie(data, values="Percentage", names=feature_name_x, title="Distribution of: " + feature_name_x)
             fig.update_traces(textposition='inside', textinfo='percent+label')
             
         else:
-            print("Invalid mode: \n mode is 'bar' or 'pie' ")
+            print("Invalid kind: \n kind is 'bar' or 'pie' ")
             exit()
         
     
         # save the figure
-        fig.write_image(f"charts/eda/feature_distribution/{feature_name_x}_{mode}.jpeg")
+        fig.write_image(f"charts/eda/feature_distribution/{feature_name_x}_{kind}.jpeg")
         
     
     def feature_correlation_barplot(self, feature_name_x):
@@ -117,7 +117,26 @@ class Visualization():
         fig.write_image(f'charts/eda/correlation_distribution_scatter/{feature_name_x} vs {feature_name_y}.jpeg')
         
 
+    
+    def feature_correlation_catplot(self, feature_name_categorical, feature_name_numerical, kind="bar", height=7, aspect=2):
+        """
+        To plot correlation between a categorical and a numberical feature
+        """
         
+        sns.set(font_scale=1.2)
+
+        # Visualize the correlation between a categorical and a numerical feature
+        sns.catplot(data=self.df, x=feature_name_categorical, y=feature_name_numerical,
+                    hue=self.target_column, kind=kind, height=height, aspect=2)
+        plt.xticks(rotation=60)
+        plt.xlabel(feature_name_categorical.capitalize())
+        plt.ylabel(feature_name_numerical.capitalize())
+        
+        # save the figure
+        plt.savefig(f'charts/eda/correlation_distribution_categorical/{feature_name_categorical} vs {feature_name_numerical}_{kind}.jpeg', bbox_inches='tight')
+
+    
+    
 def display(message="Display Message:", df=None):
     """
     Display a message on a console
