@@ -125,6 +125,9 @@ def feature_encoding(df, columns):
     # Remove id_student column
     df.drop("id_student", axis=1, inplace=True)
     
+    # Remove outliers
+    df.drop([11360, 8173, 9449, 14977, 20177, 2333, 1950, 18371, 19110], inplace=True)
+    
     # To Encode categorical features
     le = LabelEncoder()
     for col in columns:
