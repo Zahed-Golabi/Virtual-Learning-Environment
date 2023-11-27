@@ -1,6 +1,11 @@
+import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.express as px
+
+from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
+from sklearn.feature_selection import mutual_info_classif
 
 
 
@@ -145,3 +150,52 @@ def display(message="Display Message:", df=None):
     print(message)
     print(df)
     print("-------------------------------------------------------------------")
+    
+    
+def feature_importance(df, kind="ExtraTreeClassifier"):
+    """
+    Feature importance to select the most relevant features in order to build powerful models
+    """
+    
+    df["label"] = df["label"].apply(lambda x: 0 if (x == "Withdrawn" or x == "Fail") else 1)
+    
+    X = df.drop("label", axis=1)
+    y = df["label"]
+    
+    
+    if kind == "ExtraTreeClassifier":
+        selector = ExtraTreesClassifier(n_estimators=400)
+        selector.fit(X,y)
+        importances = list(selector.feature_importances_)
+        
+    elif kind == "MutualInformation":
+        importances = mutual_info_classif(X,y)
+        
+    elif kind == "RandomForest":
+        selector = RandomForestClassifier(n_estimators=385)
+        selector.fit(X,y)
+        importances = list(selector.feature_importances_)
+    
+    else:
+        print("Invalid Feature Selection Algorithm")
+        exit()
+        
+        
+    feature_importances = [(feature, round(importance*100, 2)) for feature, importance in 
+                            zip(df.columns[0:-1],importances)]
+    feature_importances = sorted(feature_importances, key=lambda x: x[1], reverse=True)
+    features = pd.DataFrame(feature_importances, columns=["Feature","Importance"])
+    fig = px.bar(features, x="Importance", y="Feature", color="Feature", text='Importance', template='seaborn')
+    fig.update_layout(margin=dict(l=20, r=50, t=50, b=20),
+                    title = 'Feature Importance ' + kind,
+                    showlegend=False,
+                    xaxis_title="Importance [%]",
+                    yaxis_title="Feature",
+                    width=800, 
+                    height=800,
+                    uniformtext_minsize=10, 
+                    uniformtext_mode='hide')
+    
+    
+    # save the figure
+    fig.write_image(f"charts/evaluation/feature_importance_{kind}.jpeg")
