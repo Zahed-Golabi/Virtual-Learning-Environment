@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-import os
+from sklearn.preprocessing import LabelEncoder
 
 
 class Preprocessing():
@@ -22,7 +22,7 @@ class Preprocessing():
         self.fill_values("imd_band")
         
         # Create twenty-two features
-        self.feature_engineering()
+        self.feature_extraction()
         
         # Drop useless features
         self.drop_features()
@@ -49,7 +49,7 @@ class Preprocessing():
         self.df[column] = self.df.apply(lambda row: self.df[self.df['region']==row['region']]['imd_band'].mode()[0] if pd.isna(row['imd_band']) else row['imd_band'], axis=1)
         
     
-    def feature_engineering(self):
+    def feature_extraction(self):
         
         """
         add twenty-two features to the dataframe in order to model effectively
@@ -114,3 +114,24 @@ class Preprocessing():
 
         # Save the updated df
         self.df.to_csv("datasets/clean_ds.csv", index=False)
+        
+
+# Feature Encoding
+def feature_encoding(df, columns):
+    """
+    Encode categorical features
+    """
+    
+    # Remove id_student column
+    df.drop("id_student", axis=1, inplace=True)
+    
+    # To Encode categorical features
+    le = LabelEncoder()
+    for col in columns:
+        df[col] = le.fit_transform(df[col])
+        
+        
+        
+    return df
+    
+    
