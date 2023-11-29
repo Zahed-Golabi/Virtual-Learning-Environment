@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.metrics import accuracy_score, precision_score, recall_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix, ConfusionMatrixDisplay, classification_report
 from src.visualization import display
 import pickle
 
@@ -70,9 +71,24 @@ class Training():
             
             # fit the classifier
             self.models[key].fit(self.X_train, self.y_train)
-            
             # make predictions
             predictions = self.models[key].predict(self.X_test)
+            
+            
+            # plot and save confusion matrix
+            print("============================================================")
+            
+            # display model metrics
+            print(key)
+            cm = confusion_matrix(self.y_test, predictions, labels=["Success","Failure"])
+            cmd = ConfusionMatrixDisplay(cm, display_labels=["Success","Failure"])
+            cmd.plot()
+            plt.savefig(f"./models/binary/{key}_cm.jpeg")
+            plt.close()
+            print()
+            print(cm)
+            print(classification_report(self.y_test, predictions))
+            print("============================================================\n")
             
             # calculate metrics
             accuracy[key] = accuracy_score(predictions, self.y_test, )
