@@ -152,7 +152,7 @@ def display(message="Display Message:", df=None):
     print("-------------------------------------------------------------------")
     
     
-def feature_importance(df, kind="ExtraTreeClassifier"):
+def feature_importance_plot(df, kind="ExtraTreeClassifier"):
     """
     Feature importance to select the most relevant features in order to build powerful models
     """
@@ -199,3 +199,22 @@ def feature_importance(df, kind="ExtraTreeClassifier"):
     
     # save the figure
     fig.write_image(f"charts/evaluation/feature_importance_{kind}.jpeg")
+    
+    
+def model_evaluation_plot(df, metric="Accuracy"):
+    """
+    plot metrics for each model
+    """
+    fig = px.bar(df.sort_values(by=metric), y=metric, color=metric,
+                text=metric, template="seaborn")
+    fig.update_layout(margin=dict(l=20, r=50, t=50, b=20),
+                     title=metric + " of Models",
+                     showlegend=True,
+                     xaxis_title="Models",
+                     yaxis_title=metric,
+                     width=600,
+                     height=600,
+                     uniformtext_minsize=10,
+                     uniformtext_mode="hide")
+    fig.write_image(f"./models/binary/{metric}.jpeg")
+    
