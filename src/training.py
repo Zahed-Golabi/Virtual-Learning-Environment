@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score, confusion_matrix, ConfusionMatrixDisplay, classification_report
 from src.visualization import display
 import pickle
+import sys
 
 # models
 from sklearn.neural_network import MLPClassifier
@@ -14,6 +15,13 @@ from sklearn.svm import LinearSVC
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
+
+# sampling
+from imblearn.over_sampling import SMOTE
+from imblearn.under_sampling import NearMiss
+from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
+
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -27,25 +35,18 @@ class Training():
         self.models = {}
         self.X = df.drop("label", axis=1)
         self.y = df["label"]
-        self.X_train, self.X_test, self.y_train, self.y_test = self.split_data()
-        
-    def split_data(self):
-        """
-        Split dataset to train and test
-        """
-        
-        if self.task == "binary":
-            self.df["label"] = self.df["label"].apply(lambda x: "Failure" if (x=="Withdrawn" or x=="Fail") else "Success")
-        else:
-            pass # Multiclass classification
-
-        # Split data into training and testing sets
-        return train_test_split(self.df.drop('label', axis=1), self.df['label'], test_size=0.3, random_state=30)
+   
     
-    def fit(self):
+    def fit_binary(self):
         """
         Fit all models on our dataset
         """
+        
+        # split data into train, test
+        self.df["label"] = self.df["label"].apply(lambda x: "Failure" if (x=="Withdrawn" or x=="Fail") else "Success")
+        X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, test_size=0.30, random_state=30)
+        
+        # define models
         self.models["Neural Network"] = MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 10, 10, 2), random_state=1)
         self.models["Gradient Boosting"] = GradientBoostingClassifier()
         self.models["Logistic Regression"] = LogisticRegression()
@@ -70,9 +71,9 @@ class Training():
             
             
             # fit the classifier
-            self.models[key].fit(self.X_train, self.y_train)
+            self.models[key].fit(X_train, y_train)
             # make predictions
-            predictions = self.models[key].predict(self.X_test)
+            predictions = self.models[key].predict(X_test)
             
             
             # plot and save confusion matrix
@@ -80,20 +81,20 @@ class Training():
             
             # display model metrics
             print(key)
-            cm = confusion_matrix(self.y_test, predictions, labels=["Success","Failure"])
+            cm = confusion_matrix(y_test, predictions, labels=["Success","Failure"])
             cmd = ConfusionMatrixDisplay(cm, display_labels=["Success","Failure"])
             cmd.plot()
             plt.savefig(f"./models/binary/{key}_cm.jpeg")
             plt.close()
             print()
             print(cm)
-            print(classification_report(self.y_test, predictions))
+            print(classification_report(y_test, predictions))
             print("============================================================\n")
             
             # calculate metrics
-            accuracy[key] = accuracy_score(predictions, self.y_test, )
-            precision[key] = precision_score(predictions, self.y_test, pos_label="Success")
-            recall[key] = recall_score(predictions, self.y_test, pos_label="Success")
+            accuracy[key] = accuracy_score(predictions, y_test, )
+            precision[key] = precision_score(predictions, y_test, pos_label="Success")
+            recall[key] = recall_score(predictions, y_test, pos_label="Success")
             
         # save metrics
         total_metrics = pd.DataFrame(index=self.models.keys(), columns=["Accuracy","Precision","Recall"])
@@ -106,3 +107,58 @@ class Training():
         
         # save total_metrics
         total_metrics.to_csv("models/binary/metrics.csv")
+        
+        
+    def fit_multiclass(self, kind="smote", imbalanced=True):
+    
+        if imbalanced==False:
+            pass
+        
+        elif kind=="near_miss":
+        
+            nm = NearMiss()
+            X, y = nm.fit_resample(self.X, self.y)
+    
+        elif kind=="smote":
+        
+            smote = SMOTE()
+            X, y = smote.fit_resample(self.X, self.y)
+    
+        elif kind=="random_oversampling":
+        
+            ros = RandomOverSampler(random_state=42)
+            X, y = ros.fit_resample(self.X, self.y)
+    
+        elif kind=="random_undersampling":
+        
+            rus = RandomUnderSampler(random_state=42, replacement=True)
+            X, y = rus.fit_resample(self.X, self.y)
+    
+        else:
+            print("Kind is Invalid!")
+            return "Error"
+        
+    
+        # RandomForest Classifier
+        rf = RandomForestClassifier(bootstrap=True, max_depth=70, max_features='auto',
+                                    min_samples_leaf=2, min_samples_split=85, n_estimators=420)
+    
+        # Train, Test
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30, random_state=13)
+
+
+        rf.fit(X_train, y_train)
+    
+        # Make predictions
+        predictions = rf.predict(X_test)
+    
+        # Calculate metrics
+        cm = confusion_matrix(y_test, predictions)
+        
+        print("\n========================================================================")
+        if imbalanced:
+            print(f"\nAlgorithm to sampling: {kind}\n")
+        
+        print(cm)
+        print(classification_report(y_test, predictions))
+        print("\n========================================================================")
