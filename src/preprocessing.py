@@ -88,7 +88,6 @@ class Preprocessing:
 
             self.df.insert(loc=len(self.df.columns) - 1, column=col, value=values)
 
-        # sum up the total activities each student participate
         def total_activity(row):
             """
             count total activity for each row
@@ -127,7 +126,6 @@ class Preprocessing:
         self.df.to_csv("datasets/clean_ds.csv", index=False)
 
 
-# Feature Encoding
 def feature_encoding(df, columns):
     """
     Encode categorical features

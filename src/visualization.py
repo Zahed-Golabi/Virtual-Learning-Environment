@@ -107,15 +107,7 @@ class Visualization:
         data = data.reset_index().rename(columns={"id_student": "Count"})
         data["Percentage"] = data.apply(
             lambda row: round(
-                100
-                * (
-                    row["Count"]
-                    / data[data[feature_name_x] == row[feature_name_x]]["Count"].sum()
-                ),
-                2,
-            ),
-            axis=1,
-        )
+                100 * (row["Count"]/ data[data[feature_name_x] == row[feature_name_x]]["Count"].sum()),2,),axis=1,)
 
         fig = px.bar(
             data,
