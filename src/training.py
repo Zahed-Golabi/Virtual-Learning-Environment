@@ -112,7 +112,8 @@ class Training():
     def fit_multiclass(self, kind="smote", imbalanced=True):
     
         if imbalanced==False:
-            pass
+            
+            X, y = self.X, self.y
         
         elif kind=="near_miss":
         
@@ -158,6 +159,8 @@ class Training():
         print("\n========================================================================")
         if imbalanced:
             print(f"\nAlgorithm to sampling: {kind}\n")
+        else:
+            print("\nSupposing data is balanced\n")
         
         print(cm)
         print(classification_report(y_test, predictions))
