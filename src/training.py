@@ -6,12 +6,13 @@ from sklearn.metrics import (
     accuracy_score,
     precision_score,
     recall_score,
+    f1_score,
     confusion_matrix,
     ConfusionMatrixDisplay,
     classification_report,
 )
 from src.visualization import display
-import pickle
+import joblib
 import sys
 
 # models
@@ -112,10 +113,7 @@ class Training:
             print("============================================================\n")
 
             # calculate metrics
-            accuracy[key] = accuracy_score(
-                predictions,
-                y_test,
-            )
+            accuracy[key] = accuracy_score(predictions,y_test,)
             precision[key] = precision_score(predictions, y_test, pos_label="Success")
             recall[key] = recall_score(predictions, y_test, pos_label="Success")
 
@@ -131,7 +129,7 @@ class Training:
         total_metrics.sort_values(by="Accuracy", ascending=False, inplace=True)
 
         # save total_metrics
-        total_metrics.to_csv("models/binary/metrics.csv")
+        total_metrics.to_csv(f"models/{self.task}/metrics.csv")
 
     def fit_multiclass(self, kind="smote", imbalanced=True):
 
@@ -162,6 +160,7 @@ class Training:
         else:
             print("Kind is Invalid!")
             return "Error"
+            sys.exit()
 
         # RandomForest Classifier
         rf = RandomForestClassifier(
@@ -179,9 +178,26 @@ class Training:
         )
 
         rf.fit(X_train, y_train)
+        
+        # save rf model
+        #joblib.dump(rf, "./models/multiclass/random_forest_near_miss.joblib")
+        
+        # to load
+        # rf = joblib.load("./models/multiclass/random_forest_near_miss.joblib")
 
         # Make predictions
         predictions = rf.predict(X_test)
+        
+        # save metrics
+        accuracy = accuracy_score(predictions,y_test)
+        precision = precision_score(predictions, y_test, average="macro")
+        recall = recall_score(predictions, y_test, average="macro")
+        f1_scor = f1_score(predictions, y_test, average="macro")
+        # save metrics
+        total_metrics = pd.DataFrame(index=["RandomForest"],
+                                    columns=["Accuracy", "Precision", "Recall", "F1-Score"])
+        total_metrics.loc["RandomForest"] = [accuracy, precision, recall, f1_scor]
+        total_metrics.to_csv("./models/multiclass/metrics.csv")
 
         # Calculate metrics
         cm = confusion_matrix(y_test, predictions)
