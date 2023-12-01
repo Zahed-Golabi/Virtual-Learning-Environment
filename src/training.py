@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 from sklearn.model_selection import train_test_split, KFold, cross_val_score
 from sklearn.metrics import (
     accuracy_score,
@@ -193,14 +194,25 @@ class Training:
         precision = precision_score(predictions, y_test, average="macro")
         recall = recall_score(predictions, y_test, average="macro")
         f1_scor = f1_score(predictions, y_test, average="macro")
-        # save metrics
+       
         total_metrics = pd.DataFrame(index=["RandomForest"],
                                     columns=["Accuracy", "Precision", "Recall", "F1-Score"])
         total_metrics.loc["RandomForest"] = [accuracy, precision, recall, f1_scor]
-        total_metrics.to_csv("./models/multiclass/metrics.csv")
+        #total_metrics.to_csv("./models/multiclass/metrics.csv")
 
         # Calculate metrics
         cm = confusion_matrix(y_test, predictions)
+        # display model metrics
+        ax = sns.heatmap(cm, annot=True, fmt="g", cmap="Blues")
+        ax.set_title("Confusion Matrix- RandomForest (Imbalanced)")
+        ax.set_xlabel("Predicted Label")
+        ax.set_ylabel("Actual Label")
+        ax.xaxis.set_ticklabels(["Fail","Withdrawn","Pass","Distinction"])
+        ax.yaxis.set_ticklabels(["Fail","Withdrawn","Pass","Distinction"])
+        #plt.plot()
+        #plt.savefig("./models/multiclass/RandomForest-imbalanced.jpeg")
+        #plt.close()
+        
 
         print(
             "\n========================================================================"
