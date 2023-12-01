@@ -133,30 +133,34 @@ class Training:
         total_metrics.to_csv(f"models/{self.task}/metrics.csv")
 
     def fit_multiclass(self, kind="smote", imbalanced=True):
+    
+    
+        X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, test_size=0.30, random_state=13)
+
 
         if imbalanced == False:
 
-            X, y = self.X, self.y
+            pass
 
         elif kind == "near_miss":
 
             nm = NearMiss()
-            X, y = nm.fit_resample(self.X, self.y)
+            X_train, y_train = nm.fit_resample(X_train, y_train)
 
         elif kind == "smote":
 
             smote = SMOTE()
-            X, y = smote.fit_resample(self.X, self.y)
+            X_train, y_train = smote.fit_resample(X_train, y_train)
 
         elif kind == "random_oversampling":
 
             ros = RandomOverSampler(random_state=42)
-            X, y = ros.fit_resample(self.X, self.y)
+            X_train, y_train = ros.fit_resample(X_train, y_train)
 
         elif kind == "random_undersampling":
 
             rus = RandomUnderSampler(random_state=42, replacement=True)
-            X, y = rus.fit_resample(self.X, self.y)
+            X_train, y_train = rus.fit_resample(X_train, y_train)
 
         else:
             print("Kind is Invalid!")
@@ -166,52 +170,46 @@ class Training:
         # RandomForest Classifier
         rf = RandomForestClassifier(
             bootstrap=True,
-            max_depth=70,
+            max_depth=90,
             max_features="auto",
             min_samples_leaf=2,
             min_samples_split=85,
             n_estimators=420,
         )
 
-        # Train, Test
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.30, random_state=13
-        )
-
         rf.fit(X_train, y_train)
         
         # save rf model
-        #joblib.dump(rf, "./models/multiclass/random_forest_near_miss.joblib")
+        joblib.dump(rf, "./models/multiclass/random_forest_smote.joblib")
         
         # to load
         # rf = joblib.load("./models/multiclass/random_forest_near_miss.joblib")
 
         # Make predictions
         predictions = rf.predict(X_test)
-        
-        # save metrics
-        accuracy = accuracy_score(predictions,y_test)
-        precision = precision_score(predictions, y_test, average="macro")
-        recall = recall_score(predictions, y_test, average="macro")
-        f1_scor = f1_score(predictions, y_test, average="macro")
-       
-        total_metrics = pd.DataFrame(index=["RandomForest"],
-                                    columns=["Accuracy", "Precision", "Recall", "F1-Score"])
-        total_metrics.loc["RandomForest"] = [accuracy, precision, recall, f1_scor]
-        #total_metrics.to_csv("./models/multiclass/metrics.csv")
 
         # Calculate metrics
-        cm = confusion_matrix(y_test, predictions)
-        # display model metrics
+        labels = ["Distinction","Fail","Pass","Withdrawn"]
+        cm = confusion_matrix(y_test, predictions, labels=labels)
+        # save confusion matrix
         ax = sns.heatmap(cm, annot=True, fmt="g", cmap="Blues")
         ax.set_title("Confusion Matrix- RandomForest (Imbalanced)")
         ax.set_xlabel("Predicted Label")
         ax.set_ylabel("Actual Label")
-        ax.xaxis.set_ticklabels(["Fail","Withdrawn","Pass","Distinction"])
-        ax.yaxis.set_ticklabels(["Fail","Withdrawn","Pass","Distinction"])
-        #plt.plot()
-        #plt.savefig("./models/multiclass/RandomForest-imbalanced.jpeg")
-        #plt.close()
+        ax.xaxis.set_ticklabels(labels)
+        ax.yaxis.set_ticklabels(labels)
+        plt.plot()
+        plt.savefig("./models/multiclass/ConfusionMatrix-Imbalanced.jpeg")
+        plt.close()
+        
+        # save classification report
+        cr = classification_report(y_test, predictions, output_dict=True)
+        cr = pd.DataFrame(cr)
+        ax = sns.heatmap(cr.iloc[0:-1, :].T, annot=True)
+        ax.set_title("ClassificationReport- RandomForest (Imbalanced)")
+        plt.plot()
+        plt.savefig("./models/multiclass/ClassificationReport-Imbalanced.jpeg")
+        plt.close()
         
 
         print(
