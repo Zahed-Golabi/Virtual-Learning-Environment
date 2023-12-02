@@ -10,7 +10,6 @@
 2. Data preprocessing
 3. Data Visualization
 4. Training Models
-5. Results
 ---
 ### 1. Running the project
 In order to run the project, do the followings:<br>
