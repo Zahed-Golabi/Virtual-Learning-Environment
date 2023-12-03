@@ -15,17 +15,17 @@ from src.training import Training
 if __name__ == "__main__":
     
     # Load the dataset into a Pandas DataFrame
-    df = pd.read_csv('./datasets/Clickstream-MOOC-dataset 1.csv')
+    #df = pd.read_csv('./datasets/Clickstream-MOOC-dataset 1.csv')
 
     # Start cleaning the dataset
-    preprocessing = Preprocessing(df)
-    preprocessing.run()
+    #preprocessing = Preprocessing(df)
+    #preprocessing.run()
     
     # Load the clean dataset into a Pandas DataFrame
     df = pd.read_csv('./datasets/clean_ds.csv')
     visualization = Visualization(df)
     visualization.stats()
-    visualization.feature_distribution_plot("code_module", mode="bar")
+    visualization.feature_distribution_plot("label", kind="bar")
     visualization.feature_correlation_barplot("code_module")
     visualization.feature_correlation_scatterplot("total_shared_clicks","total_clicks")
     visualization.feature_correlation_catplot("code_presentation", "total_activities", kind="violin")
@@ -59,8 +59,8 @@ if __name__ == "__main__":
     
     # final features
     final_features = ["total_activities","total_clicks","total_content_clicks","code_module","total_shared_clicks",
-                      "total_hrml_clicks","total_url_clicks","total_page_clicks","total_dualpane_clicks",
-                      "total_external_quiz_clicks", "label"]                  
+                     "total_hrml_clicks","total_url_clicks","total_page_clicks","total_dualpane_clicks",
+                     "total_external_quiz_clicks", "label"]                  
     df = df[final_features]
     
     model = Training(df, "multiclass")
