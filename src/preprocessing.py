@@ -29,6 +29,9 @@ class Preprocessing:
 
         # Drop useless features
         self.drop_features()
+        
+        # Drop outliers
+        # self.outlier_detection()
 
         # Save clean dataframe in a new file
         self.save_new_dataset()
@@ -116,6 +119,23 @@ class Preprocessing:
         """
         """
         self.df.drop(self.df.columns[9:-23], axis=1, inplace=True)
+        
+    def outlier_detection(self):
+        """
+        Detect abnormal data on features
+        """
+        
+        # Remove the target variable from the dataframe
+        df_features = self.df.drop(self.target_column, axis=1)
+
+        # Detect outliers using the LOF algorithm
+        lof = LocalOutlierFactor(n_neighbors=10, contamination=0.1)
+        outliers = lof.fit_predict(df_features)
+
+        display("Number of detected items as outlier", np.count_nonzero(outliers == -1))
+
+        # Remove the outliers from the dataframe
+        self.df = self.df.loc[outliers != -1]
 
     def save_new_dataset(self):
         """
